@@ -6,9 +6,6 @@ author:              Nick Chapman
 maintainer:          nic@amadido.co.uk
 github:              https://github.com/Nick-Chapman/fb.git
 
-extra-source-files:
-- README.md
-
 dependencies:
 - ansi-terminal
 - array
