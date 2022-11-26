@@ -10,6 +10,17 @@ typedef unsigned long u64;
 
 typedef int i32;
 
+const u32 physical_width = 1920;
+const u32 physical_height = 1080;
+
+const u32 world_width = 1024;
+const u32 world_height = 800;
+
+const u32 border = 50;
+
+const u32 virtual_width = world_width + border;
+const u32 virtual_height = world_height + border;
+
 static u64 wallclock_time() { //in micro-seconds
   struct timeval tv;
   gettimeofday(&tv,NULL);
@@ -44,22 +55,25 @@ int main() {
       prints++;
     }
     tick++;
-    prepare_life();
+    prepare_life(); //most of the time here
     blit();
     step_world();
   };
   return 0;
 }
 
-const u32 physical_width = 1920;
-const u32 physical_height = 1080;
-const u32 physical_size = physical_height * physical_width;
-
-static u32 screen[physical_size] = {};
+static u32 screen[virtual_height * virtual_width] = {};
 
 static void blit() {
   FILE* fp = fopen("/dev/fb0","w");
-  fwrite(&screen,sizeof(u32),physical_size,fp);
+  //fwrite(&screen,sizeof(u32),physical_size,fp);
+  const u32 off_v = (physical_height - virtual_height) / 2;
+  const u32 off_h = (physical_width - virtual_width) / 2;
+  for (u32 y = 0; y < virtual_height; y++) {
+    const u32 off = (((off_v + y) * physical_width) + off_h) * sizeof(u32);
+    fseek(fp,off,2);
+    fwrite(&screen[y*virtual_width],sizeof(u32),virtual_width,fp);
+  }
   fclose(fp);
 }
 
@@ -70,26 +84,26 @@ const u32 grey  = 0x007f7f7f;
 
 const u32 life_scale = 8;
 
-const u32 life_width = 1024/life_scale;
-const u32 life_height = 800/life_scale;
+const u32 life_width = world_width/life_scale;
+const u32 life_height = world_height/life_scale;
 const u32 life_size = life_height * life_width;
 
-const u32 life_offset_x = (physical_width - (life_width * life_scale)) /2;
-const u32 life_offset_y = (physical_height - (life_height * life_scale)) /2;
+const u32 life_offset_x = (virtual_width - (life_width * life_scale)) /2;
+const u32 life_offset_y = (virtual_height - (life_height * life_scale)) /2;
 
 u8 world[life_size] = {};
 
 void prepare_life() {
-  for (u32 y = 0; y < physical_height; y++) {
-    for (u32 x = 0; x < physical_width; x++) {
-      u32 el = y * physical_width + x;
+  for (u32 y = 0; y < virtual_height; y++) {
+    for (u32 x = 0; x < virtual_width; x++) {
+      u32 el = y * virtual_width + x;
       bool borderL = x < life_offset_x;
       bool borderR = x >= (life_offset_x + life_width * life_scale);
       bool borderU = y < life_offset_y;
       bool borderD = y >= (life_offset_y + life_height * life_scale);
       bool border = borderL || borderR || borderU || borderD;
       if (border) {
-        screen[el] = grey;
+        screen[el] = blue;
       } else {
         u32 yy = (y - life_offset_y) / life_scale;
         u32 xx = (x - life_offset_x) / life_scale;
