@@ -8,26 +8,23 @@ typedef unsigned char u8;
 typedef unsigned int u32;
 typedef unsigned long u64;
 
+typedef int i32;
+
 const u32 tick_prints_per_second = 3;
 const u32 million = 1000000;
 const u32 tick_print_duration_us = million / tick_prints_per_second;
 
-u64 wallclock_time(void);
-
-void blit(void);
-void prepare_blue(void);
-void prepare_red_green_gradient(void);
-
-void init_life(void);
-void prepare_life(void);
-void step_world(void);
-
-void log(const char* s) {
-  if (0) {
-    printf("log:%s\n",s);
-    fflush(stdout);
-  }
+static u64 wallclock_time() { //in micro-seconds
+  struct timeval tv;
+  gettimeofday(&tv,NULL);
+  return tv.tv_sec*(u64)1000000+tv.tv_usec;
 }
+
+static void blit(void);
+
+static void init_life(void);
+static void prepare_life(void);
+static void step_world(void);
 
 int main() {
   assert(sizeof(u8) == 1);
@@ -52,20 +49,13 @@ int main() {
   return 0;
 }
 
-u64 wallclock_time() { //in micro-seconds
-  struct timeval tv;
-  gettimeofday(&tv,NULL);
-  return tv.tv_sec*(u64)1000000+tv.tv_usec;
-}
-
 const u32 physical_width = 1920;
 const u32 physical_height = 1080;
 const u32 physical_size = physical_height * physical_width;
 
-u32 screen[physical_size] = {};
+static u32 screen[physical_size] = {};
 
-void blit() {
-  log("blit");
+static void blit() {
   FILE* fp = fopen("/dev/fb0","w");
   fwrite(&screen,sizeof(u32),physical_size,fp);
   fclose(fp);
@@ -75,30 +65,6 @@ const u32 black = 0x00000000;
 const u32 white = 0x00ffffff;
 const u32 blue  = 0x000000ff;
 const u32 grey  = 0x007f7f7f;
-
-void prepare_blue() {
-  log("prepare_blue");
-  for (u32 y = 0; y < physical_height; y++) {
-    for (u32 x = 0; x < physical_width; x++) {
-      u32 el = y * physical_width + x;
-      screen[el] = blue;
-    }
-  }
-}
-
-void prepare_red_green_gradient() {
-  log("prepare_red_green_gradient");
-  for (u32 y = 0; y < physical_height; y++) {
-    for (u32 x = 0; x < physical_width; x++) {
-      u32 el = y * physical_width + x;
-      u8 r = 256*x/physical_width;
-      u8 g = 256*y/physical_height;
-      u8 b = 0;
-      u32 col = (r<<16) | (g<<8) | b;
-      screen[el] = col;
-    }
-  }
-}
 
 const u32 life_scale = 16;
 
@@ -112,7 +78,6 @@ const u32 life_offset_y = (physical_height - (life_height * life_scale)) /2;
 u8 world[life_size] = {};
 
 void prepare_life() {
-  log("prepare_life");
   for (u32 y = 0; y < physical_height; y++) {
     for (u32 x = 0; x < physical_width; x++) {
       u32 el = y * physical_width + x;
@@ -135,58 +100,9 @@ void prepare_life() {
   }
 }
 
-void glider_DR(u32 x, u32 y) {
-  log("glider_DR");
-  u32 i = x * life_width + y;
-  u32 w = life_width;
-  u32 ww = 2*life_width;
-  world[i] = 1;
-  world[i+2] = 1;
-  world[i+w+1] = 1;
-  world[i+w+2] = 1;
-  world[i+ww+1] = 1;
-}
-
-void glider_DL(u32 x, u32 y) {
-  log("glider_DL");
-  u32 i = x * life_width + y;
-  u32 w = life_width;
-  u32 ww = 2*life_width;
-  world[i] = 1;
-  world[i-2] = 1;
-  world[i+w-1] = 1;
-  world[i+w-2] = 1;
-  world[i+ww-1] = 1;
-}
-
-void zero_world() {
-  log("zero_world");
-  for (u32 i = 0; i < life_size; i++) {
-    world[i] = 0;
-  }
-}
-
-void chess_world() {
-  log("chess_world");
-  for (u32 y = 0; y < life_height; y++) {
-    for (u32 x = 0; x < life_width; x++) {
-      u32 cell = y * life_width + x;
-      bool alive = (x+y)%2;
-      world[cell] = alive;
-    }
-  }
-}
-
-void init_life() {
-  glider_DR(7,5);
-  glider_DR(15,23);
-  glider_DL(40,10);
-}
-
 u8 neighbors[life_size] = {};
 
 void step_world() {
-  log("step_world");
   for (u32 y = 0; y < life_height; y++) {
     for (u32 x = 0; x < life_width; x++) {
       u32 cell = y * life_width + x;
@@ -217,4 +133,23 @@ void step_world() {
       neighbors[cell] = 0;
     }
   }
+}
+
+typedef struct { i32 x; i32 y; } xy;
+xy gliderDR[] = { {0,0}, {2,0}, {1,1}, {2,1}, {1,2}, {0,0} };
+xy gliderDL[] = { {0,0}, {-2,0}, {-1,1}, {-2,1}, {-1,2}, {0,0} };
+
+void place(xy loc, xy* elems) {
+  u32 cell = loc.y * life_width + loc.x;
+  for (u32 i = 0;; i++) {
+    xy e = elems[i];
+    if (i>0 && e.x == 0 && e.y == 0) break;
+    world[(life_size + cell + (life_width * e.y) + e.x) % life_size] = 1;
+  }
+}
+
+void init_life() {
+  place({5,7},gliderDR);
+  place({23,15},gliderDR);
+  place({10,40},gliderDL);
 }
