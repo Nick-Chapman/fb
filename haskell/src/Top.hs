@@ -14,7 +14,12 @@ main = do
   let pureGen = mkStdGen 137
   let bools = randoms pureGen
   let states = iterate step (state0 bools)
-  forever $ sequence_ [ writePic (makePic (genFromState s)) | s <- states ]
+  forever $ sequence_
+    [ do
+        putStrLn $ "tick" ++ show i
+        writePic (makePic (genFromState s))
+    | (i,s) <- zip [1::Int ..] states
+    ]
 
 type Pic = [Word8]
 
