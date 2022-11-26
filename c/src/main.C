@@ -82,7 +82,7 @@ const u32 white = 0x00ffffff;
 const u32 blue  = 0x000000ff;
 const u32 grey  = 0x007f7f7f;
 
-const u32 life_scale = 8;
+const u32 life_scale = 4;
 
 const u32 life_width = world_width/life_scale;
 const u32 life_height = world_height/life_scale;
