@@ -1,10 +1,10 @@
 name:                fb
 version:             0.1.0.0
-description:         Generate some framebuf image data
+description:         Conway's Game of Life
 license:             BSD3
 author:              Nick Chapman
 maintainer:          nic@amadido.co.uk
-github:              https://github.com/Nick-Chapman/fb.git
+github:              https://github.com/Nick-Chapman/life.git
 
 dependencies:
 - ansi-terminal
