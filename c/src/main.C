@@ -228,22 +228,17 @@ const char* alphaX[] =
 
 u32 char_pixel_width(char c) { // including 1 pixel gap (for all but j descender)
   //                a b c d e f g h i j k l m n o p q r s t u v w x y z
-  if (c==' ') return 6;
   static u32 x[] = {6,6,6,6,6,4,6,6,3,3,6,3,9,6,6,6,6,4,6,4,6,6,9,6,6,6};
   return x[c-'a'];
 }
 
-void place_alpha(xy loc, char c) {
-  if (c == ' ') return;
-  assert(c >= 'a' && c <= 'z');
+void place_font_element(xy loc, char c, const char** font, u32 offset) {
   const u32 char_height = 13;
+  const u32 width = char_pixel_width(c);
   const u32 char_description_width = 6;
-  const u32 char_width = char_pixel_width(c);
-  const char** alpha = (c<'n')?alphaA :c<'x'?alphaN :alphaX;
-  u32 offset = c -    ((c<'n')?    'a':c<'x'?    'n':    'x');
   for (u32 j = 0; j < char_height; j++) {
-    const char* line = alpha[j];
-    for (u32 i = 0; i < char_width; i++) {
+    const char* line = font[j];
+    for (u32 i = 0; i < width; i++) {
       char desc = line[i + offset * char_description_width] ;
       bool check = (desc == c) || (desc == ' ');
       if(!check) {
@@ -263,17 +258,33 @@ void place_alpha(xy loc, char c) {
   }
 }
 
+void place_char(xy loc, char c) {
+  assert(c >= 'a' && c <= 'z');
+  if (c >= 'x') {
+    place_font_element(loc,c,alphaX,c-'x');
+  }
+  else if (c >= 'n') {
+    place_font_element(loc,c,alphaN,c-'n');
+  }
+  else {
+    place_font_element(loc,c,alphaA,c-'a');
+  }
+}
+
 xy addXY(xy a, xy b) {
   return { a.x + b.x, a.y + b.y };
 }
 
 void place_string(xy loc, const char* s) {
   while (char c = *s++) {
-    place_alpha(loc,c);
-    loc = addXY(loc,{(i32)char_pixel_width(c),0});
+    if (c == ' ') {
+      loc = addXY(loc,{4,0});
+    } else {
+      place_char(loc,c);
+      loc = addXY(loc,{(i32)char_pixel_width(c),0});
+    }
   }
 }
-
 
 void init_life() {
   //place({5,7},gliderDR);
