@@ -12,6 +12,6 @@ _build/main.exe: _build/main.o
 
 _build/%.o: src/%.C Makefile
 	@echo Building $<
-	gcc -Wall -Werror $< -c -o $@
+	gcc -Wall -Werror $< -c -o $@ -O1
 
 _build: ; @mkdir -p $@
