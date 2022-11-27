@@ -27,44 +27,54 @@ static u64 wallclock_time() { //in micro-seconds
   return tv.tv_sec*(u64)1000000+tv.tv_usec;
 }
 
-static void blit(void);
+void blit(void);
 
 static void init_life(void);
-static void prepare_life(void);
-static void step_world(void);
+void prepare_life(void);
+void step_world(void);
+
+
+void print_stats_maybe(u64 runtime) {
+  const u32 million = 1000000;
+  const u32 prints_per_second = 1;
+  static u32 frame = 0;
+  static u32 prints = 0;
+  static u32 frames_since_last_print = 0;
+  frame++;
+  frames_since_last_print++;
+  bool do_print = runtime >= million*(prints+1) / prints_per_second;
+  if (do_print) {
+    u32 fps = frames_since_last_print * prints_per_second;
+    prints++;
+    frames_since_last_print = 0;
+    float secs = (float)runtime/million;
+    printf("%4d :%7.2f :%7d :%5d\n" , prints, secs, frame, fps);
+    fflush(stdout);
+  }
+}
 
 int main() {
   assert(sizeof(u8) == 1);
   assert(sizeof(u32) == 4);
   assert(sizeof(u64) == 8);
-  const u32 prints_per_second = 3;
-  const u32 million = 1000000;
-  const u32 tick_print_duration_us = million / prints_per_second;
-  u64 toc = wallclock_time();
-  u32 prints = 0; //count of prints
-  u32 tick = 0; //count of frames since last print
   init_life();
-  for (u32 frame = 0;; frame++) {
-    u64 tic = wallclock_time();
-    if (tic - toc >= tick_print_duration_us) {
-      u32 fps = tick * prints_per_second;
-      float secs = (float)prints/prints_per_second;
-      printf("time=%.2f, frame=%d, fps=%d\n", secs, frame, fps); fflush(stdout);
-      toc = tic;
-      tick = 0;
-      prints++;
-    }
-    tick++;
-    prepare_life(); //most of the time here
+  u64 start_time = wallclock_time();
+  for (;;) {
+    u64 now = wallclock_time();
+    u64 runtime = now - start_time;
+    print_stats_maybe(runtime);
+    prepare_life();
     blit();
-    step_world();
+    if (runtime > 2000000) {
+      step_world();
+    }
   };
   return 0;
 }
 
 static u32 screen[virtual_height * virtual_width] = {};
 
-static void blit() {
+void blit() {
   FILE* fp = fopen("/dev/fb0","w");
   //fwrite(&screen,sizeof(u32),physical_size,fp);
   const u32 off_v = (physical_height - virtual_height) / 2;
@@ -82,7 +92,7 @@ const u32 white = 0x00ffffff;
 const u32 blue  = 0x000000ff;
 const u32 grey  = 0x007f7f7f;
 
-const u32 life_scale = 4;
+const u32 life_scale = 8;
 
 const u32 life_width = world_width/life_scale;
 const u32 life_height = world_height/life_scale;
