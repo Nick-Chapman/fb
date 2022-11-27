@@ -4,5 +4,5 @@
 stack.yaml.lock
 .markdown-preview.html
 c/_build
-of/life/bin
-of/life/obj
+of/bin
+of/obj
