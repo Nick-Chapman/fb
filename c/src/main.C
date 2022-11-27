@@ -181,7 +181,9 @@ void place(xy loc, xy* elems) {
   }
 }
 
-const char* alphaA[] =
+// lowercase....
+
+const char* alpha_a[] =
   {"                                                 ii    jj                        ",
    "       bb             dd       fff         hh    ii    jj    kk    ll            ",
    "       bb             dd       fff         hh                kk    ll            ",
@@ -196,7 +198,7 @@ const char* alphaA[] =
    "                                     ggggg            jjj                        ",
    "                                     ggggg            jjj                        "};
 
-const char* alphaN[] =
+const char* alpha_n[] =
   {"                                                               ",
    "                                     tt                        ",
    "                                     tt                        ",
@@ -211,7 +213,7 @@ const char* alphaN[] =
    "             pp       qq                                       ",
    "             pp       qq                                       "};
 
-const char* alphaX[] =
+const char* alpha_x[] =
   {"                  ",
    "                  ",
    "                  ",
@@ -226,10 +228,64 @@ const char* alphaX[] =
    "       yyyyy      ",
    "       yyyyy      "};
 
+// uppercase....
+
+const char* alpha_A[] =
+  {"                                                                                 ",
+   " AAAAA BBBBB CCCCC DDDD  EEEE  FFFF  GGGGG HH HH II      JJJ KK KK LL    MMMMMMMM",
+   " AAAAA BBBBB CCCCC DDDDD EEEE  FFFF  GGGGG HH HH II      JJJ KK KK LL    MMMMMMMM",
+   " AA AA BB BB CC CC DD DD EE    FF    GG GG HH HH II       JJ KK KK LL    MM MM MM",
+   " AA AA BB BB CC    DD DD EE    FF    GG    HH HH II       JJ KK KK LL    MM MM MM",
+   " AAAAA BBBB  CC    DD DD EEEE  FFFF  GG GG HHHHH II       JJ KKKK  LL    MM MM MM",
+   " AAAAA BBBB  CC    DD DD EEEE  FFFF  GG GG HHHHH II       JJ KKKK  LL    MM MM MM",
+   " AA AA BB BB CC    DD DD EE    FF    GG GG HH HH II       JJ KK KK LL    MM MM MM",
+   " AA AA BB BB CC CC DD DD EE    FF    GG GG HH HH II    JJ JJ KK KK LL    MM MM MM",
+   " AA AA BBBBB CCCCC DDDDD EEEE  FF    GGGGG HH HH II    JJJJJ KK KK LLL   MM MM MM",
+   " AA AA BBBBB CCCCC DDDD  EEEE  FF    GGGGG HH HH II    JJJJJ KK KK LLL   MM MM MM",
+   "                                                                                 ",
+   "                                                                                 "};
+
+const char* alpha_N[] =
+  {"                                                               ",
+   " NNNNN OOOOO PPPPP QQQQQ RRRRR SSSSS TTTT  UU UU VV VV WW WW WW",
+   " NNNNN OOOOO PPPPP QQQQQ RRRRR SSSSS TTTT  UU UU VV VV WW WW WW",
+   " NN NN OO OO PP PP QQ QQ RR RR SS SS  TT   UU UU VV VV WW WW WW",
+   " NN NN OO OO PP PP QQ QQ RR RR SS     TT   UU UU VV VV WW WW WW",
+   " NN NN OO OO PPPPP QQ QQ RRRR  SSSSS  TT   UU UU VV VV WW WW WW",
+   " NN NN OO OO PPPPP QQ QQ RRRR  SSSSS  TT   UU UU VV VV WW WW WW",
+   " NN NN OO OO PP    QQ QQ RR RR    SS  TT   UU UU VV VV WW WW WW",
+   " NN NN OO OO PP    QQ QQ RR RR SS SS  TT   UU UU VVVVV WW WW WW",
+   " NN NN OOOOO PP    QQQQQ RR RR SSSSS  TT   UUUUU  VVV  WWWWWWWW",
+   " NN NN OOOOO PP    QQQQQ RR RR SSSSS  TT   UUUUU  VVV  WWWWWWWW",
+   "                      QQ                                       ",
+   "                      QQ                                       "};
+
+const char* alpha_X[] =
+  {"                  ",
+   " XX XX YY YY ZZZZZ",
+   " XX XX YY YY ZZZZZ",
+   " XX XX YY YY    ZZ",
+   " XX XX YY YY    ZZ",
+   "  XXX  YY YY  ZZZ ",
+   "  XXX  YYYYY  ZZZ ",
+   " XX XX YYYYY ZZ   ",
+   " XX XX    YY ZZ   ",
+   " XX XX YYYYY ZZZZZ",
+   " XX XX YYYYY ZZZZZ",
+   "                  ",
+   "                  "};
+
+
 u32 char_pixel_width(char c) { // including 1 pixel gap (for all but j descender)
+  assert((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
   //                a b c d e f g h i j k l m n o p q r s t u v w x y z
   static u32 x[] = {6,6,6,6,6,4,6,6,3,3,6,3,9,6,6,6,6,4,6,4,6,6,9,6,6,6};
-  return x[c-'a'];
+  static u32 X[] = {6,6,6,6,5,5,6,6,3,6,6,4,9,6,6,6,6,6,6,5,6,6,9,6,6,6};
+  if (c>='a') {
+    return x[c-'a'];
+  } else {
+    return X[c-'A'];
+  }
 }
 
 void place_font_element(xy loc, char c, const char** font, u32 offset) {
@@ -259,15 +315,24 @@ void place_font_element(xy loc, char c, const char** font, u32 offset) {
 }
 
 void place_char(xy loc, char c) {
-  assert(c >= 'a' && c <= 'z');
+  assert((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
   if (c >= 'x') {
-    place_font_element(loc,c,alphaX,c-'x');
+    place_font_element(loc,c,alpha_x,c-'x');
   }
   else if (c >= 'n') {
-    place_font_element(loc,c,alphaN,c-'n');
+    place_font_element(loc,c,alpha_n,c-'n');
+  }
+  else if (c >= 'a') {
+    place_font_element(loc,c,alpha_a,c-'a');
+  }
+  else if (c >= 'X') {
+    place_font_element(loc,c,alpha_X,c-'X');
+  }
+  else if (c >= 'N') {
+    place_font_element(loc,c,alpha_N,c-'N');
   }
   else {
-    place_font_element(loc,c,alphaA,c-'a');
+    place_font_element(loc,c,alpha_A,c-'A');
   }
 }
 
@@ -291,6 +356,11 @@ void init_life() {
   //place({23,15},gliderDR);
   //place({10,40},gliderDL);
   //place({10,10},gosperGun);
-  place_string({50,110},"abcdefghijklmnopqrstuvwxyz");
-  place_string({50,150},"in xxxx john horton conway discovered the game of life");
+  place_string({50,100},"abcdefghijklmnopqrstuvwxyz");
+  place_string({50,130},"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+  place_string({50,160},"In xxxx John Horton Conway discovered the Game of Life");
+
+  place_string({50,190},"AaBbcDdEeFfGgHhIiJjKkLlMm");
+  place_string({50,220},"NnOoPpQqRrSsTtUuVvWwXxYyZz");
+
 }
