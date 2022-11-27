@@ -4,7 +4,7 @@ top: exe
 run: _build/main.exe
 	./$<
 
-exe: _build/main.exe
+exe: _build _build/main.exe
 
 _build/main.exe: _build/main.o
 	@echo Linking
