@@ -1,8 +1,5 @@
 #include "ofApp.h"
 
-#include <assert.h>
-#include <stdio.h>
-
 typedef unsigned char u8;
 typedef unsigned int u32;
 typedef int i32;
