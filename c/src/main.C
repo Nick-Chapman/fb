@@ -21,7 +21,7 @@ const u32 border = 0; //50
 const u32 virtual_width = world_width + border;
 const u32 virtual_height = world_height + border;
 
-const u32 life_scale = 4;
+const u32 life_scale = 5;
 
 static u64 wallclock_time() { //in micro-seconds
   struct timeval tv;
@@ -375,9 +375,10 @@ void init_life() {
   //place({23,15},gliderDR);
   //place({10,40},gliderDL);
   //place({10,10},gosperGun);
-  place_string({50,50},"In 1970 John Horton Conway devised the Game of Life");
-  place_string({50,70},"A cellular automaton with simple rules");
-  place_string({50,90},"Yet interesting emergent behaviour");
+  place_string({50, 50},"In 1970 the British mathematician John Horton Conway");
+  place_string({50, 75},"        devised the Game of Life");
+  place_string({50,100},"A cellular automaton with simple rules");
+  place_string({50,125},"Yet interesting emergent behaviour");
   //place_string({50,150},"AaBbcDdEeFfGgHhIiJjKkLlMm");
   //place_string({50,170},"NnOoPpQqRrSsTtUuVvWwXxYyZz");
   //place_string({50,190},"0123456789");
