@@ -31,12 +31,14 @@ static u64 wallclock_time() { //in micro-seconds
   return tv.tv_sec*(u64)1000000+tv.tv_usec;
 }
 
-void blit(void);
-void blitV(void);
-void blitM(u32*);
+// can be used when physical size == world size
+//void blit(void);
+//void blitM(u32*);
+//void blitV(void);
+//void blitVM(u32*);
 
 static void init_life(void);
-void prepare_life(void);
+void prepare_life(u32*);
 void step_world(void);
 
 const u32 million = 1000000;
@@ -59,6 +61,8 @@ void print_stats_maybe(u64 runtime) {
   }
 }
 
+//static u32 screen[virtual_height * virtual_width] = {};
+
 int main() {
   assert(sizeof(u8) == 1);
   assert(sizeof(u32) == 4);
@@ -74,10 +78,13 @@ int main() {
     u64 now = wallclock_time();
     u64 runtime = now - start_time;
     print_stats_maybe(runtime);
-    prepare_life();
-    //blitV();
-    blitM(mm);
-    if (runtime > 10 * million) {
+
+    //prepare_life(screen);
+    //blitM(mm);
+
+    prepare_life(mm);
+
+    if (runtime > 1 * million) {
       step_world();
     }
   };
@@ -85,12 +92,19 @@ int main() {
   return 0;
 }
 
-static u32 screen[virtual_height * virtual_width] = {};
-
-void blit() {
+/*void blit() {
   FILE* fp = fopen("/dev/fb0","w");
   fwrite(&screen,sizeof(u32),physical_width*physical_height,fp);
   fclose(fp);
+}
+
+void blitM(u32* mm) {
+  for (u32 y = 0; y < physical_height; y++) {
+    for (u32 x = 0; x < physical_width; x++) {
+      const u32 off = y * physical_width + x;
+      mm[off] = screen[off];
+    }
+  }
 }
 
 void blitV() {
@@ -105,7 +119,7 @@ void blitV() {
   fclose(fp);
 }
 
-void blitM(u32* mm) {
+void blitVM(u32* mm) {
   const u32 off_v = (physical_height - virtual_height) / 2;
   const u32 off_h = (physical_width - virtual_width) / 2;
   for (u32 y = 0; y < virtual_height; y++) {
@@ -115,7 +129,7 @@ void blitM(u32* mm) {
       mm[off] = screen[cell];
     }
   }
-}
+}*/
 
 const u32 black = 0x00000000;
 const u32 white = 0x00ffffff;
@@ -131,7 +145,7 @@ const u32 life_offset_y = (virtual_height - (life_height * life_scale)) /2;
 
 u8 world[life_size] = {};
 
-void prepare_life() {
+void prepare_life(u32* screen) {
   for (u32 y = 0; y < virtual_height; y++) {
     for (u32 x = 0; x < virtual_width; x++) {
       u32 el = y * virtual_width + x;
