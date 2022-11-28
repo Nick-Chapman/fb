@@ -23,7 +23,7 @@ const u32 border = 0; //50
 const u32 virtual_width = world_width + border;
 const u32 virtual_height = world_height + border;
 
-const u32 life_scale = 5;
+const u32 life_scale = 4;
 
 static u64 wallclock_time() { //in micro-seconds
   struct timeval tv;
@@ -84,7 +84,7 @@ int main() {
 
     prepare_life(mm);
 
-    if (runtime > 1 * million) {
+    if (runtime > 10 * million) {
       step_world();
     }
   };
@@ -140,8 +140,8 @@ const u32 life_width = world_width/life_scale;
 const u32 life_height = world_height/life_scale;
 const u32 life_size = life_height * life_width;
 
-const u32 life_offset_x = (virtual_width - (life_width * life_scale)) /2;
-const u32 life_offset_y = (virtual_height - (life_height * life_scale)) /2;
+//const u32 life_offset_x = (virtual_width - (life_width * life_scale)) /2;
+//const u32 life_offset_y = (virtual_height - (life_height * life_scale)) /2;
 
 u8 world[life_size] = {};
 
@@ -149,16 +149,17 @@ void prepare_life(u32* screen) {
   for (u32 y = 0; y < virtual_height; y++) {
     for (u32 x = 0; x < virtual_width; x++) {
       u32 el = y * virtual_width + x;
-      bool borderL = x < life_offset_x;
-      bool borderR = x >= (life_offset_x + life_width * life_scale);
-      bool borderU = y < life_offset_y;
-      bool borderD = y >= (life_offset_y + life_height * life_scale);
-      bool border = borderL || borderR || borderU || borderD;
-      if (border) {
-        screen[el] = blue;
-      } else {
-        u32 yy = (y - life_offset_y) / life_scale;
-        u32 xx = (x - life_offset_x) / life_scale;
+      //bool borderL = x < life_offset_x;
+      //bool borderR = x >= (life_offset_x + life_width * life_scale);
+      //bool borderU = y < life_offset_y;
+      //bool borderD = y >= (life_offset_y + life_height * life_scale);
+      //bool border = borderL || borderR || borderU || borderD;
+      //if (border) {screen[el] = blue;} else
+      {
+        //u32 yy = (y - life_offset_y) / life_scale;
+        //u32 xx = (x - life_offset_x) / life_scale;
+        u32 yy = y  / life_scale;
+        u32 xx = x  / life_scale;
         u32 cell = yy * life_width + xx;
         bool alive = world[cell];
         u32 col = alive ? white : black;
@@ -411,11 +412,11 @@ void init_life() {
   //place({5,7},gliderDR);
   //place({23,15},gliderDR);
   //place({10,40},gliderDL);
-  //place({10,10},gosperGun);
   place_string({50, 50},"In 1970 the British mathematician John Horton Conway");
   place_string({50, 75},"        devised the Game of Life");
   place_string({50,100},"A cellular automaton with simple rules");
   place_string({50,125},"Yet interesting emergent behaviour");
+  place({700,200},gosperGun);
   //place_string({50,150},"AaBbcDdEeFfGgHhIiJjKkLlMm");
   //place_string({50,170},"NnOoPpQqRrSsTtUuVvWwXxYyZz");
   //place_string({50,190},"0123456789");
