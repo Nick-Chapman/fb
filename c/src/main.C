@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <sys/time.h> // gettimeofday()
 #include <unistd.h> // sleep()
+#include <sys/mman.h> // mmap()
+#include <fcntl.h>
 
 typedef unsigned char u8;
 typedef unsigned int u32;
@@ -30,6 +32,8 @@ static u64 wallclock_time() { //in micro-seconds
 }
 
 void blit(void);
+void blitV(void);
+void blitM(u32*);
 
 static void init_life(void);
 void prepare_life(void);
@@ -59,6 +63,11 @@ int main() {
   assert(sizeof(u8) == 1);
   assert(sizeof(u32) == 4);
   assert(sizeof(u64) == 8);
+
+  int fd = open("/dev/fb0", O_RDWR);
+  u32 fbsize = physical_width * physical_height * sizeof(u32);
+  u32* mm = (u32*)mmap(NULL,fbsize,PROT_WRITE,MAP_SHARED,fd,0);
+
   init_life();
   u64 start_time = wallclock_time();
   for (;;) {
@@ -66,11 +75,13 @@ int main() {
     u64 runtime = now - start_time;
     print_stats_maybe(runtime);
     prepare_life();
-    blit();
+    //blitV();
+    blitM(mm);
     if (runtime > 10 * million) {
       step_world();
     }
   };
+  close(fd);
   return 0;
 }
 
@@ -92,6 +103,18 @@ void blitV() {
     fwrite(&screen[y*virtual_width],sizeof(u32),virtual_width,fp);
   }
   fclose(fp);
+}
+
+void blitM(u32* mm) {
+  const u32 off_v = (physical_height - virtual_height) / 2;
+  const u32 off_h = (physical_width - virtual_width) / 2;
+  for (u32 y = 0; y < virtual_height; y++) {
+    for (u32 x = 0; x < virtual_width; x++) {
+      const u32 off = (((off_v + y) * physical_width) + off_h + x);
+      u32 cell = y * virtual_width + x;
+      mm[off] = screen[cell];
+    }
+  }
 }
 
 const u32 black = 0x00000000;
