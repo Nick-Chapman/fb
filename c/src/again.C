@@ -196,22 +196,20 @@ void print_stats_maybe() {
   static bool first = true;
   if (first) {
     first = false;
-    printf("   n :   time : frame# :  fps :   pop\n");
+    printf("   n :   time :   gen# :  fps :   pop\n");
   }
-  static u64 last = wallclock_time();
+  static u64 start = wallclock_time();
   u64 now = wallclock_time();
   static int frame = 0;
   static int prints = 0;
-  static int frames_since_last_print = 0;
   frame++;
-  frames_since_last_print++;
-  const int million = 1000000;
-  bool do_print = (int)(now-last) >= million*(prints+1) / prints_per_second;
+  const u64 million = 1000000;
+  int frames_per_print = 500;
+  bool do_print = (frame % frames_per_print == 0);
   if (do_print) {
-    u32 fps = frames_since_last_print * prints_per_second;
     prints++;
-    frames_since_last_print = 0;
-    float secs = (float)(now-last)/million;
+    u32 fps = million * frames_per_print * prints / (u64)(now-start);
+    float secs = (float)(now-start)/million;
     int pop = population();
     printf("%4d :%7.2f :%7d :%5d :%6d\n" , prints, secs, frame, fps, pop);
     fflush(stdout);
