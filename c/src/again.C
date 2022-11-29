@@ -115,7 +115,7 @@ void blit(u32* fb) { // life-->fb
 
 u32 neighbors[life_height * life_width] = {};
 
-void step_gen(int g) { // life
+void step_gen() { // life
   int W = life_width;
   int H = life_height;
   // loop life array --> neighbors
@@ -241,7 +241,7 @@ int main(int argc, char* argv[]) {
 
   for (int g = 0;; g++) {
     print_stats_maybe();
-    step_gen(g);
+    step_gen();
     blit(fb);
   }
 }
