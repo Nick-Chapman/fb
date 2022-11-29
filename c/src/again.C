@@ -114,22 +114,21 @@ u32 neighbors[life_height * life_width] = {};
 void step_gen(int g) { // life
   int W = life_width;
   int H = life_height;
-  // loop life array --> neighbors -- TODO: one loop?
-  for (int y = 0; y < H; y++) {
-    for (int x = 0; x < W; x++) {
-      u32 i = x + y*W;
-      u32 alive = life[i];
-      if (alive) {
-        #define neighbor(xi,yi) neighbors [ (W+x+xi)%W + ((H+y+yi)%H) * W ]
-        neighbor(-1,-1)++;
-        neighbor( 0,-1)++;
-        neighbor( 1,-1)++;
-        neighbor(-1, 0)++;
-        neighbor( 1, 0)++;
-        neighbor(-1, 1)++;
-        neighbor( 0, 1)++;
-        neighbor( 1, 1)++;
-      }
+  // loop life array --> neighbors
+  for (int i = 0; i < H*W; i++) {
+    int x = i % W;
+    int y = i / W;
+    u32 alive = life[i];
+    if (alive) {
+#define neighbor(xi,yi) neighbors [ (W+x+xi)%W + ((H+y+yi)%H) * W ]
+      neighbor(-1,-1)++;
+      neighbor( 0,-1)++;
+      neighbor( 1,-1)++;
+      neighbor(-1, 0)++;
+      neighbor( 1, 0)++;
+      neighbor(-1, 1)++;
+      neighbor( 0, 1)++;
+      neighbor( 1, 1)++;
     }
   }
   // loop neighbor --> life array
