@@ -100,11 +100,15 @@ void blit(u32* fb) { // life-->fb
   int off_x = (physical_width - S*W) / 2;
   int tl = off_x + physical_width * off_y;
   // loop portal size
-  for (int y = 0; y < (S*H); y++) {
-    for (int x = 0; x < (S*W); x++) {
-      int i = (x/S) + (y/S)*W;
-      int j = tl + x + y*physical_width;
-      fb[j] = life[i];
+  for (int y = 0; y < H; y++) {
+    for (int j = 0; j < S; j ++) {
+      for (int x = 0; x < W; x++) {
+        for (int i = 0; i < S; i ++) {
+          int off = tl + i+(S*x) + (j+(S*y))*physical_width;
+          int cell = x + y*W;
+          fb[off] = life[cell];
+        }
+      }
     }
   }
 }
