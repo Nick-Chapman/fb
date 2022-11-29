@@ -1,5 +1,7 @@
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/time.h> // gettimeofday()
@@ -147,6 +149,7 @@ void step_gen(int g) { // life
 
 typedef struct { int x; int y; } xy;
 xy gliderDR[] = { {0,0}, {2,0}, {1,1}, {2,1}, {1,2}, {0,0} };
+xy gliderDL[] = { {0,0}, {-2,0}, {-1,1}, {-2,1}, {-1,2}, {0,0} };
 
 void place(xy loc, xy* elems) {
   int W = life_width;
@@ -156,6 +159,22 @@ void place(xy loc, xy* elems) {
     if (i>0 && e.x == 0 && e.y == 0) break;
     life[(W+loc.x+e.x)%W + ((H+loc.y+e.y)%H) * W] = white;
   }
+}
+
+xy random_pos() {
+  int x = rand() % life_width;
+  int y = rand() % life_height;
+  //printf("x=%d,y=%d\n",x,y);
+  xy pos = {x,y};
+  return pos;
+}
+
+void place_gliders(int n) {
+  // place N random gliders
+  int half1 = (n+1)/2;
+  int half2 = n/2;
+  for (int i = 0; i < half1; i++) place(random_pos(),gliderDR);
+  for (int i = 0; i < half2; i++) place(random_pos(),gliderDL);
 }
 
 int population() {
@@ -199,14 +218,25 @@ void print_stats_maybe() {
   }
 }
 
-int main(void) {
+int main(int argc, char* argv[]) {
+
+  bool do_grab = false;
+  int n_gliders = 0;
+  for (int i = 1; i < argc; i++) {
+    char* arg = argv[i];
+    //printf("argv(%d) '%s'\n", i, arg);
+    if (0 == strcmp(arg,"-grab")) do_grab = true;
+    sscanf(arg,"%d",&n_gliders);
+  }
+  //printf("life: do_grab=%d, n_gliders=%d\n", do_grab, n_gliders);
+
   int fd = open("/dev/fb0", O_RDWR);
   u32 fbsize = physical_width * physical_height * sizeof(u32);
   u32* fb = (u32*)mmap(NULL,fbsize,PROT_WRITE,MAP_SHARED,fd,0);
 
   draw_boundary_rectangle(fb);
-  grab(fb);
-  place({5,5},gliderDR);
+  if (do_grab) grab(fb);
+  place_gliders(n_gliders);
 
   for (int g = 0;; g++) {
     print_stats_maybe();

@@ -2,7 +2,7 @@
 top: _build _build/again.exe
 
 run: _build/again.exe
-	./$<
+	./$< 500
 
 _build/%.exe: _build/%.o
 	@echo Linking
