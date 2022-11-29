@@ -1,12 +1,10 @@
 
-top: exe
+top: _build _build/again.exe
 
-run: _build/explore.exe
+run: _build/again.exe
 	./$<
 
-exe: _build _build/explore.exe
-
-_build/explore.exe: _build/explore.o
+_build/%.exe: _build/%.o
 	@echo Linking
 	g++ $^ -o $@
 
